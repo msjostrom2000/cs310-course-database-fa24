@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 
 public class SectionDAO {
     
@@ -16,36 +17,39 @@ public class SectionDAO {
     }
     
     public String find(int termid, String subjectid, String num) {
-        
-        String result = "[]";
-        
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        ResultSetMetaData rsmd = null;
-        
-        try {
-            
-            Connection conn = daoFactory.getConnection();
-            
-            if (conn.isValid(0)) {
-                
-                // INSERT YOUR CODE HERE
-                
+    String result = "[]";
+    PreparedStatement ps = null;
+    ResultSet rs = null;
+
+    try {
+        Connection conn = daoFactory.getConnection();
+
+        if (conn.isValid(0)) {
+            // Prepare the statement and set parameters
+            ps = conn.prepareStatement(QUERY_FIND);
+            ps.setInt(1, termid);
+            ps.setString(2, subjectid);
+            ps.setString(3, num);
+            rs = ps.executeQuery();
+
+            // Debugging: Print the number of rows
+            int rowCount = 0;
+            while (rs.next()) {
+                rowCount++;
+                System.out.println("Row " + rowCount + ": CRN = " + rs.getInt("crn"));
             }
-            
+            System.out.println("Total rows found: " + rowCount);
+
+            // Convert to JSON using DAOUtility
+            result = DAOUtility.getResultSetAsJson(rs);
         }
-        
-        catch (Exception e) { e.printStackTrace(); }
-        
-        finally {
-            
-            if (rs != null) { try { rs.close(); } catch (Exception e) { e.printStackTrace(); } }
-            if (ps != null) { try { ps.close(); } catch (Exception e) { e.printStackTrace(); } }
-            
-        }
-        
-        return result;
-        
+    } catch (SQLException e) {
+    } finally {
+        if (rs != null) { try { rs.close(); } catch (SQLException e) {} }
+        if (ps != null) { try { ps.close(); } catch (SQLException e) {} }
     }
+    return result;
+}
+
     
 }

@@ -6,27 +6,30 @@ import java.util.ArrayList;
 
 public class DAOUtility {
     
-    public static final int TERMID_FA24 = 1;
-    
     public static String getResultSetAsJson(ResultSet rs) {
-        
-        JsonArray records = new JsonArray();
-        
-        try {
-        
-            if (rs != null) {
+    JsonArray records = new JsonArray();
 
-                // INSERT YOUR CODE HERE
+    try {
+        ResultSetMetaData metadata = rs.getMetaData();
+        int columnCount = metadata.getColumnCount();
 
+        while (rs.next()) {
+            JsonObject record = new JsonObject();
+            for (int i = 1; i <= columnCount; i++) {
+                String columnName = metadata.getColumnName(i);
+                Object value = rs.getObject(i);
+                record.put(columnName, value);
             }
-            
+            records.add(record);
         }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-        
-        return Jsoner.serialize(records);
-        
+    } catch (SQLException e) {
     }
+
+    String jsonResult = Jsoner.serialize(records);
+    System.out.println("Generated JSON: " + jsonResult);  // Debugging output
+    return jsonResult;
+}
+
+
     
 }
