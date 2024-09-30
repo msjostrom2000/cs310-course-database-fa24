@@ -3,8 +3,6 @@ package edu.jsu.mcis.cs310.coursedb.dao;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
 
 public class SectionDAO {
     
@@ -17,39 +15,45 @@ public class SectionDAO {
     }
     
     public String find(int termid, String subjectid, String num) {
-    String result = "[]";
-    PreparedStatement ps = null;
-    ResultSet rs = null;
+        
+        String result = "[]";
+        
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        
+        try {
+            
+            Connection conn = daoFactory.getConnection();
+            
+            if (conn.isValid(0)) {
+                
+                // Change to create a scrollable ResultSet
+                ps = conn.prepareStatement(QUERY_FIND, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+                ps.setInt(1, termid);            // Set termid parameter
+                ps.setString(2, subjectid);       // Set subjectid parameter
+                ps.setString(3, num);             // Set course number parameter
 
-    try {
-        Connection conn = daoFactory.getConnection();
-
-        if (conn.isValid(0)) {
-            // Prepare the statement and set parameters
-            ps = conn.prepareStatement(QUERY_FIND);
-            ps.setInt(1, termid);
-            ps.setString(2, subjectid);
-            ps.setString(3, num);
-            rs = ps.executeQuery();
-
-            // Debugging: Print the number of rows
-            int rowCount = 0;
-            while (rs.next()) {
-                rowCount++;
-                System.out.println("Row " + rowCount + ": CRN = " + rs.getInt("crn"));
+                rs = ps.executeQuery();
+                
+                // Optional: Remove the call to rs.last(), as it is not needed for processing rows
+                
+                // Convert ResultSet to JSON format using the utility method
+                result = DAOUtility.getResultSetAsJson(rs);
+                System.out.println("JSON Result from find(): " + result); // Debugging print
+                
             }
-            System.out.println("Total rows found: " + rowCount);
-
-            // Convert to JSON using DAOUtility
-            result = DAOUtility.getResultSetAsJson(rs);
+            
         }
-    } catch (SQLException e) {
-    } finally {
-        if (rs != null) { try { rs.close(); } catch (SQLException e) {} }
-        if (ps != null) { try { ps.close(); } catch (SQLException e) {} }
+        
+        catch (Exception e) { e.printStackTrace(); }
+        
+        finally {
+            if (rs != null) { try { rs.close(); } catch (Exception e) { e.printStackTrace(); } }
+            if (ps != null) { try { ps.close(); } catch (Exception e) { e.printStackTrace(); } }
+        }
+        
+        return result;
+        
     }
-    return result;
-}
-
     
 }

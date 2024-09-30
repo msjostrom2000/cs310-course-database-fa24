@@ -4,8 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
 
 public class RegistrationDAO {
     
@@ -16,58 +14,72 @@ public class RegistrationDAO {
     }
     
     public boolean create(int studentid, int termid, int crn) {
-    boolean result = false;
-    PreparedStatement ps = null;
-
-    try {
-        Connection conn = daoFactory.getConnection();
         
-        if (conn.isValid(0)) {
-            // Prepare and execute the insert query
-            String query = "INSERT INTO registration (studentid, termid, crn) VALUES (?, ?, ?)";
-            ps = conn.prepareStatement(query);
-            ps.setInt(1, studentid);
-            ps.setInt(2, termid);
-            ps.setInt(3, crn);
+        boolean result = false;
+        
+        PreparedStatement ps = null;
+        
+        try {
             
-            // Execute and check if 1 row was affected
-            int rowsAffected = ps.executeUpdate();
-            result = (rowsAffected == 1);
+            Connection conn = daoFactory.getConnection();
+            
+            if (conn.isValid(0)) {
+                
+                String query = "INSERT INTO registration (studentid, termid, crn) VALUES (?, ?, ?)";
+                ps = conn.prepareStatement(query);
+                ps.setInt(1, studentid);
+                ps.setInt(2, termid);
+                ps.setInt(3, crn);
+                
+                result = (ps.executeUpdate() == 1);
+                
+            }
+            
         }
-    } catch (SQLException e) {
-    } finally {
-        if (ps != null) { try { ps.close(); } catch (SQLException e) {} }
+        
+        catch (Exception e) { e.printStackTrace(); }
+        
+        finally {
+            if (ps != null) { try { ps.close(); } catch (Exception e) { e.printStackTrace(); } }
+        }
+        
+        return result;
+        
     }
-    return result;
-}
-
-
+    
     public boolean delete(int studentid, int termid, int crn) {
-    boolean result = false;
-    PreparedStatement ps = null;
-
-    try {
-        Connection conn = daoFactory.getConnection();
         
-        if (conn.isValid(0)) {
-            // Prepare and execute the delete query
-            String query = "DELETE FROM registration WHERE studentid = ? AND termid = ? AND crn = ?";
-            ps = conn.prepareStatement(query);
-            ps.setInt(1, studentid);
-            ps.setInt(2, termid);
-            ps.setInt(3, crn);
+        boolean result = false;
+        
+        PreparedStatement ps = null;
+        
+        try {
             
-            // Execute and check if 1 row was affected
-            int rowsAffected = ps.executeUpdate();
-            result = (rowsAffected == 1);
+            Connection conn = daoFactory.getConnection();
+            
+            if (conn.isValid(0)) {
+                
+                String query = "DELETE FROM registration WHERE studentid = ? AND termid = ? AND crn = ?";
+                ps = conn.prepareStatement(query);
+                ps.setInt(1, studentid);
+                ps.setInt(2, termid);
+                ps.setInt(3, crn);
+                
+                result = (ps.executeUpdate() == 1);
+                
+            }
+            
         }
-    } catch (SQLException e) {
-    } finally {
-        if (ps != null) { try { ps.close(); } catch (SQLException e) {} }
+        
+        catch (Exception e) { e.printStackTrace(); }
+        
+        finally {
+            if (ps != null) { try { ps.close(); } catch (Exception e) { e.printStackTrace(); } }
+        }
+        
+        return result;
+        
     }
-    return result;
-}
-
     
     public boolean delete(int studentid, int termid) {
         
@@ -81,50 +93,61 @@ public class RegistrationDAO {
             
             if (conn.isValid(0)) {
                 
-                // INSERT YOUR CODE HERE
+                String query = "DELETE FROM registration WHERE studentid = ? AND termid = ?";
+                ps = conn.prepareStatement(query);
+                ps.setInt(1, studentid);
+                ps.setInt(2, termid);
+                
+                result = (ps.executeUpdate() > 0);
                 
             }
             
         }
         
-        catch (SQLException e) {}
+        catch (Exception e) { e.printStackTrace(); }
         
         finally {
-
-            if (ps != null) { try { ps.close(); } catch (SQLException e) {} }
-            
+            if (ps != null) { try { ps.close(); } catch (Exception e) { e.printStackTrace(); } }
         }
         
         return result;
         
     }
-
+    
     public String list(int studentid, int termid) {
-    String result = "[]";  // Default empty JSON array
-    PreparedStatement ps = null;
-    ResultSet rs = null;
-
-    try {
-        Connection conn = daoFactory.getConnection();
         
-        if (conn.isValid(0)) {
-            // Prepare and execute the query
-            String query = "SELECT * FROM registration WHERE studentid = ? AND termid = ?";
-            ps = conn.prepareStatement(query);
-            ps.setInt(1, studentid);
-            ps.setInt(2, termid);
-            rs = ps.executeQuery();
+        String result = "[]";
+        
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        
+        try {
             
-            // Convert ResultSet to JSON using DAOUtility
-            result = DAOUtility.getResultSetAsJson(rs);
+            Connection conn = daoFactory.getConnection();
+            
+            if (conn.isValid(0)) {
+                
+                String query = "SELECT * FROM registration WHERE studentid = ? AND termid = ? ORDER BY crn";
+                ps = conn.prepareStatement(query);
+                ps.setInt(1, studentid);
+                ps.setInt(2, termid);
+                
+                rs = ps.executeQuery();
+                result = DAOUtility.getResultSetAsJson(rs);
+                
+            }
+            
         }
-    } catch (SQLException e) {
-    } finally {
-        if (rs != null) { try { rs.close(); } catch (SQLException e) {} }
-        if (ps != null) { try { ps.close(); } catch (SQLException e) {} }
+        
+        catch (Exception e) { e.printStackTrace(); }
+        
+        finally {
+            if (rs != null) { try { rs.close(); } catch (Exception e) { e.printStackTrace(); } }
+            if (ps != null) { try { ps.close(); } catch (Exception e) { e.printStackTrace(); } }
+        }
+        
+        return result;
+        
     }
-    return result;
-}
-
     
 }
